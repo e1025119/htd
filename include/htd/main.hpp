@@ -221,6 +221,7 @@
 #include <htd/PreprocessedGraph.hpp>
 #include <htd/PreprocessorDefinitions.hpp>
 #include <htd/PriorityQueue.hpp>
+#include <htd/ProvideStaticOrderingAlgorithm.hpp>
 #include <htd/RandomOrderingAlgorithm.hpp>
 #include <htd/RandomVertexSelectionStrategy.hpp>
 #include <htd/SemiNormalizationOperation.hpp>

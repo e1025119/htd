@@ -134,7 +134,10 @@ htd_cli::OptionManager * createOptionManager(void)
         htd_cli::SingleValueOption * patienceOption = new htd_cli::SingleValueOption("patience", "Terminate the algorithm if more than <amount> iterations did not lead to an improvement (-1 = infinite). (Default: -1)", "amount");
 
         manager->registerOption(patienceOption, "Optimization Options");
-    }
+   		
+		htd_cli::SingleValueOption * provideOrderingOption = new htd_cli::SingleValueOption("provideOrdering", "Bypass the OrderingAlgorithms, provide a static ordering.", "ordering", 'p');
+        manager->registerOption(provideOrderingOption, "Option to provide static ordering");
+ 	}
     catch (const std::runtime_error & exception)
     {
         std::cout << "SETUP FOR OPTION-MANAGER FAILED: " << exception.what() << std::endl;
@@ -181,6 +184,8 @@ bool handleOptions(int argc, const char * const * const argv, htd_cli::OptionMan
     const htd_cli::SingleValueOption & iterationOption = optionManager.accessSingleValueOption("iterations");
 
     const htd_cli::SingleValueOption & patienceOption = optionManager.accessSingleValueOption("patience");
+    
+	const htd_cli::SingleValueOption & provideOrderingOption = optionManager.accessSingleValueOption("provideOrdering");
 
     const htd_cli::Option & triangulationMinimizationOption = optionManager.accessOption("triangulation-minimization");
 
@@ -404,6 +409,21 @@ bool handleOptions(int argc, const char * const * const argv, htd_cli::OptionMan
         }
     }
 
+	if (ret) 
+	{
+		if (provideOrderingOption.used())
+		{
+            const std::string & value = provideOrderingOption.value();
+			
+			if (value.empty() || (value.at(0) != '{') || (value.at(value.length()-1) != '}'))
+			{
+				std::cerr << "INVALID PROGRAM CALL: Option --provideOrdering (-p) may only be used with an argument of the form \"{vertex_1,...,vertex_n}\"" << std::endl;
+
+				ret = false;
+			}
+		}
+	}
+
     if (ret && triangulationMinimizationOption.used())
     {
         htd::TriangulationMinimizationOrderingAlgorithm * algorithm =
@@ -617,6 +637,8 @@ int main(int argc, const char * const * const argv)
         const htd_cli::SingleValueOption & instanceOption = optionManager->accessSingleValueOption("instance");
 
         const htd_cli::SingleValueOption & patienceOption = optionManager->accessSingleValueOption("patience");
+        
+		const htd_cli::SingleValueOption & provideOrderingOption = optionManager->accessSingleValueOption("provideOrdering");
 
         const htd_cli::Option & printProgressOption = optionManager->accessOption("print-progress");
 
@@ -624,7 +646,7 @@ int main(int argc, const char * const * const argv)
 
         bool hypertreeDecompositionRequested = decompositionTypeChoice.used() && std::string(decompositionTypeChoice.value()) == "hypertree";
 
-        if (std::string(strategyChoice.value()) == "min-separator")
+		if (std::string(strategyChoice.value()) == "min-separator")
         {
             htd::SeparatorBasedTreeDecompositionAlgorithm * treeDecompositionAlgorithm = new htd::SeparatorBasedTreeDecompositionAlgorithm(libraryInstance);
 
@@ -635,8 +657,16 @@ int main(int argc, const char * const * const argv)
         else
         {
             htd::BucketEliminationTreeDecompositionAlgorithm * treeDecompositionAlgorithm = new htd::BucketEliminationTreeDecompositionAlgorithm(libraryInstance);
-
+			
             treeDecompositionAlgorithm->setComputeInducedEdgesEnabled(false);
+
+			if (provideOrderingOption.used())
+			{
+				std::cout << "main.cpp:665, ordering: "+std::string(provideOrderingOption.value()) << std::endl;
+				htd::EnhancedMaximumCardinalitySearchOrderingAlgorithm * test = new htd::EnhancedMaximumCardinalitySearchOrderingAlgorithm(libraryInstance);
+				htd::ProvideStaticOrderingAlgorithm * test2 = new htd::ProvideStaticOrderingAlgorithm(libraryInstance, provideOrderingOption.value());
+				//treeDecompositionAlgorithm->setOrderingAlgorithm(new htd::ProvideStaticOrderingAlgorithm(libraryInstance, provideOrderingOption.value()));
+			}
 
             libraryInstance->treeDecompositionAlgorithmFactory().setConstructionTemplate(treeDecompositionAlgorithm);
         }
