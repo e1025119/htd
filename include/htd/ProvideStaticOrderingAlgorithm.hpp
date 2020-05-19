@@ -18,20 +18,26 @@ namespace htd
              *  Constructor for a new ordering algorithm of type ProvideStaticOrderingAlgorithm.
              *
              *  @param[in] manager   			The management instance to which the new algorithm belongs.
-             *  @param[in] orderingArgument   	The string argument from --provideOrdering/-p, contains the static ordering.
+             *  @param[in] orderingArgument   	Parsed from the string argument from --provideOrdering/-p, contains the static ordering.
              */
             
-			HTD_API ProvideStaticOrderingAlgorithm(const htd::LibraryInstance * const manager, std::string orderingArgument);
+			HTD_API ProvideStaticOrderingAlgorithm(const htd::LibraryInstance * const manager, htd::VertexOrdering * ordering);
             
             HTD_API virtual ~ProvideStaticOrderingAlgorithm();
             
-            HTD_API htd::IVertexOrdering * computeOrdering(const htd::IMultiHypergraph & graph) const HTD_NOEXCEPT HTD_OVERRIDE;
+            HTD_API htd::IVertexOrdering * computeOrdering(void) const HTD_NOEXCEPT;
+            
+			HTD_API htd::IVertexOrdering * computeOrdering(const htd::IMultiHypergraph & graph) const HTD_NOEXCEPT HTD_OVERRIDE;
 
             HTD_API htd::IVertexOrdering * computeOrdering(const htd::IMultiHypergraph & graph, const htd::IPreprocessedGraph & preprocessedGraph) const HTD_NOEXCEPT HTD_OVERRIDE;
 
             HTD_API const htd::LibraryInstance * managementInstance(void) const HTD_NOEXCEPT HTD_OVERRIDE;
 
             HTD_API void setManagementInstance(const htd::LibraryInstance * const manager) HTD_OVERRIDE;
+
+			HTD_API htd::VertexOrdering * getOrdering(void) const HTD_NOEXCEPT;
+
+			HTD_API void setOrdering(htd::VertexOrdering * const ordering);
 
 #ifndef HTD_USE_VISUAL_STUDIO_COMPATIBILITY_MODE
             HTD_API ProvideStaticOrderingAlgorithm * clone(void) const HTD_OVERRIDE;
@@ -53,8 +59,6 @@ namespace htd
             struct Implementation;
 
             std::unique_ptr<Implementation> implementation_;
-
-			VertexOrdering ordering;
 	};
 }
 

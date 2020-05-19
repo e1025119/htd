@@ -32,6 +32,7 @@
 #include <htd/Vertex.hpp>
 
 #include <cstdlib>
+#include <cstring>
 
 namespace htd
 {

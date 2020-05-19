@@ -22,8 +22,9 @@ struct htd::ProvideStaticOrderingAlgorithm::Implementation
      *  Constructor for the implementation details structure.
      *
      *  @param[in] manager   The management instance to which the current object instance belongs.
+     *  @param[in] ordering   The static ordering parsed via commandline argument.
      */
-    Implementation(const htd::LibraryInstance * const manager) : managementInstance_(manager)
+    Implementation(const htd::LibraryInstance * const manager, htd::VertexOrdering * const ordering) : managementInstance_(manager), ordering_(ordering)
     {
 
     }
@@ -37,18 +38,18 @@ struct htd::ProvideStaticOrderingAlgorithm::Implementation
      *  The management instance to which the current object instance belongs.
      */
     const htd::LibraryInstance * managementInstance_;
+	
+	/**
+	 * The static ordering parsed via commandline argument.
+	 */
+	htd::VertexOrdering * ordering_;
 };
 
-htd::ProvideStaticOrderingAlgorithm::ProvideStaticOrderingAlgorithm(const htd::LibraryInstance * const manager, std::string orderingArgument) : implementation_(new Implementation(manager))
-{
-	char *token = strtok(orderingArgument.substr(1,orderingArgument.length()-2), ",");
-	while ( token != null)
-	{
-		std::cout << token << str::endl;
-		token = strtok(NULL, ",");
-		ordering = NULL; //TODO parse argument content into ordering
-	}
 
+htd::ProvideStaticOrderingAlgorithm::ProvideStaticOrderingAlgorithm(const htd::LibraryInstance * const manager, htd::VertexOrdering * const ordering) 
+: implementation_(new Implementation(manager, ordering))
+{
+	
 }
             
 htd::ProvideStaticOrderingAlgorithm::~ProvideStaticOrderingAlgorithm()
@@ -56,14 +57,19 @@ htd::ProvideStaticOrderingAlgorithm::~ProvideStaticOrderingAlgorithm()
     
 }
 
+htd::IVertexOrdering * htd::ProvideStaticOrderingAlgorithm::computeOrdering(void) const HTD_NOEXCEPT
+{
+	return getOrdering();
+}
+
 htd::IVertexOrdering * htd::ProvideStaticOrderingAlgorithm::computeOrdering(const htd::IMultiHypergraph & graph) const HTD_NOEXCEPT
 {
-	return ordering;
+	return computeOrdering();
 }
 
 htd::IVertexOrdering * htd::ProvideStaticOrderingAlgorithm::computeOrdering(const htd::IMultiHypergraph & graph, const htd::IPreprocessedGraph & preprocessedGraph) const HTD_NOEXCEPT
 {
- 	return ordering;
+	return computeOrdering();
 }
 
 const htd::LibraryInstance * htd::ProvideStaticOrderingAlgorithm::managementInstance(void) const HTD_NOEXCEPT
@@ -78,15 +84,27 @@ void htd::ProvideStaticOrderingAlgorithm::setManagementInstance(const htd::Libra
     implementation_->managementInstance_ = manager;
 }
 
+htd::VertexOrdering * htd::ProvideStaticOrderingAlgorithm::getOrdering(void) const HTD_NOEXCEPT
+{
+    return implementation_->ordering_;
+}
+
+void htd::ProvideStaticOrderingAlgorithm::setOrdering(htd::VertexOrdering * const ordering)
+{
+    HTD_ASSERT(ordering != nullptr)
+	
+	implementation_->ordering_ = ordering;
+}
+
 htd::ProvideStaticOrderingAlgorithm * htd::ProvideStaticOrderingAlgorithm::clone(void) const
 {
-    return new htd::ProvideStaticOrderingAlgorithm(managementInstance());
+    return new htd::ProvideStaticOrderingAlgorithm(managementInstance(), getOrdering());
 }
 
 #ifdef HTD_USE_VISUAL_STUDIO_COMPATIBILITY_MODE
 htd::IOrderingAlgorithm * htd::ProvideStaticOrderingAlgorithm::cloneOrderingAlgorithm(void) const
 {
-    return new htd::ProvideStaticOrderingAlgorithm(implementation_->managementInstance_);
+    return new htd::ProvideStaticOrderingAlgorithm(implementation_->managementInstance_, getOrdering());
 }
 #endif
 

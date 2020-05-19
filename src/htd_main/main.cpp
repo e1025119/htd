@@ -414,7 +414,8 @@ bool handleOptions(int argc, const char * const * const argv, htd_cli::OptionMan
 		if (provideOrderingOption.used())
 		{
             const std::string & value = provideOrderingOption.value();
-			
+		
+			/* relies on the input format to look like "{vertex1,...,vertexn}*/
 			if (value.empty() || (value.at(0) != '{') || (value.at(value.length()-1) != '}'))
 			{
 				std::cerr << "INVALID PROGRAM CALL: Option --provideOrdering (-p) may only be used with an argument of the form \"{vertex_1,...,vertex_n}\"" << std::endl;
@@ -662,10 +663,26 @@ int main(int argc, const char * const * const argv)
 
 			if (provideOrderingOption.used())
 			{
-				std::cout << "main.cpp:665, ordering: "+std::string(provideOrderingOption.value()) << std::endl;
-				htd::EnhancedMaximumCardinalitySearchOrderingAlgorithm * test = new htd::EnhancedMaximumCardinalitySearchOrderingAlgorithm(libraryInstance);
-				htd::ProvideStaticOrderingAlgorithm * test2 = new htd::ProvideStaticOrderingAlgorithm(libraryInstance, provideOrderingOption.value());
-				//treeDecompositionAlgorithm->setOrderingAlgorithm(new htd::ProvideStaticOrderingAlgorithm(libraryInstance, provideOrderingOption.value()));
+				std::vector<htd::vertex_t> sequence;
+
+				/* parse ordering */
+				std::string value = std::string(provideOrderingOption.value());
+				size_t len = value.length();
+				std::string input = value.substr(1,len-2);
+				
+				size_t pos = 0;
+				std::string token;
+				while ((pos = input.find(",")) != std::string::npos)
+				{
+					token = input.substr(0,pos);
+					sequence.push_back(std::stoi(token));	
+					input.erase(0,pos + 1);
+				}
+				sequence.push_back(std::stoi(input));
+				const std::vector<htd::vertex_t> cSequence(sequence.begin(), sequence.end());
+
+				/* set ordering algorithm */
+				treeDecompositionAlgorithm->setOrderingAlgorithm(new htd::ProvideStaticOrderingAlgorithm(libraryInstance, new htd::VertexOrdering(cSequence,(std::size_t)0)));
 			}
 
             libraryInstance->treeDecompositionAlgorithmFactory().setConstructionTemplate(treeDecompositionAlgorithm);
