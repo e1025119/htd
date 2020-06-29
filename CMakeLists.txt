@@ -67,6 +67,7 @@ if(NOT DEFINED BUILD_TESTING)
 
     set(BUILD_TESTING OFF)
 endif()
+set(BUILD_TESTING OFF)
 
 subdirs(src/htd)
 subdirs(src/htd_io)
